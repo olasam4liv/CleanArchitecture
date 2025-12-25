@@ -1,0 +1,223 @@
+[
+  {
+    "Tag": "Successful",
+    "Languages": [
+      {
+        "Language": "en",
+        "Message": "Successful"
+      },
+      {
+        "Language": "fr",
+        "Message": "Reussi"
+      }
+    ]
+  },
+  {
+    "Tag": "Processing",
+    "Languages": [
+      {
+        "Language": "en",
+        "Message": "Processing"
+      },
+      {
+        "Language": "fr",
+        "Message": "En traitement"
+      }
+    ]
+  },
+  {
+    "Tag": "Failed",
+    "Languages": [
+      {
+        "Language": "en",
+        "Message": "Failed"
+      },
+      {
+        "Language": "fr",
+        "Message": "Echoue"
+      }
+    ]
+  },
+  {
+    "Tag": "ValidationError",
+    "Languages": [
+      {
+        "Language": "en",
+        "Message": "Validation Error"
+      },
+      {
+        "Language": "fr",
+        "Message": "Erreur de validation"
+      }
+    ]
+  },
+  {
+    "Tag": "EmailAlreadyExist",
+    "Languages": [
+      {
+        "Language": "en",
+        "Message": "Email already exists"
+      },
+      {
+        "Language": "fr",
+        "Message": "L'email existe deja"
+      }
+    ]
+  },
+  {
+    "Tag": "PhoneNumberAlreadyExist",
+    "Languages": [
+      {
+        "Language": "en",
+        "Message": "Phone number already exists"
+      },
+      {
+        "Language": "fr",
+        "Message": "Le numero de telephone existe deja"
+      }
+    ]
+  },
+  {
+    "Tag": "InvalidCredentials",
+    "Languages": [
+      {
+        "Language": "en",
+        "Message": "Invalid credentials"
+      },
+      {
+        "Language": "fr",
+        "Message": "Identifiants invalides"
+      }
+    ]
+  },
+  {
+    "Tag": "UserNotFound",
+    "Languages": [
+      {
+        "Language": "en",
+        "Message": "User not found"
+      },
+      {
+        "Language": "fr",
+        "Message": "Utilisateur non trouve"
+      }
+    ]
+  },
+  {
+    "Tag": "UserInactive",
+    "Languages": [
+      {
+        "Language": "en",
+        "Message": "User is inactive"
+      },
+      {
+        "Language": "fr",
+        "Message": "L'utilisateur est inactif"
+      }
+    ]
+  },
+  {
+    "Tag": "BadRequest",
+    "Languages": [
+      {
+        "Language": "en",
+        "Message": "Bad request"
+      },
+      {
+        "Language": "fr",
+        "Message": "Mauvaise requete"
+      }
+    ]
+  },
+  {
+    "Tag": "Unauthorized",
+    "Languages": [
+      {
+        "Language": "en",
+        "Message": "Unauthorized"
+      },
+      {
+        "Language": "fr",
+        "Message": "Non autorise"
+      }
+    ]
+  },
+  {
+    "Tag": "ProviderAuthorizationError",
+    "Languages": [
+      {
+        "Language": "en",
+        "Message": "Provider authorization error"
+      },
+      {
+        "Language": "fr",
+        "Message": "Erreur d'autorisation du fournisseur"
+      }
+    ]
+  },
+  {
+    "Tag": "Forbidden",
+    "Languages": [
+      {
+        "Language": "en",
+        "Message": "Forbidden"
+      },
+      {
+        "Language": "fr",
+        "Message": "Interdit"
+      }
+    ]
+  },
+  {
+    "Tag": "ResourceNotFoundError",
+    "Languages": [
+      {
+        "Language": "en",
+        "Message": "Resource not found"
+      },
+      {
+        "Language": "fr",
+        "Message": "Ressource non trouvee"
+      }
+    ]
+  },
+  {
+    "Tag": "Conflict",
+    "Languages": [
+      {
+        "Language": "en",
+        "Message": "Conflict"
+      },
+      {
+        "Language": "fr",
+        "Message": "Conflit"
+      }
+    ]
+  },
+  {
+    "Tag": "InternalServerError",
+    "Languages": [
+      {
+        "Language": "en",
+        "Message": "Internal server error"
+      },
+      {
+        "Language": "fr",
+        "Message": "Erreur interne du serveur"
+      }
+    ]
+  },
+  {
+    "Tag": "ServiceUnavailable",
+    "Languages": [
+      {
+        "Language": "en",
+        "Message": "Service unavailable"
+      },
+      {
+        "Language": "fr",
+        "Message": "Service indisponible"
+      }
+    ]
+  }
+]

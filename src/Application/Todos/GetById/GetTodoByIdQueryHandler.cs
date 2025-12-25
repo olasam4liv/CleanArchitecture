@@ -1,0 +1,41 @@
+﻿using Application.Abstractions.Authentication;
+using Application.Abstractions.Data;
+using Application.Abstractions.Messaging;
+using Microsoft.EntityFrameworkCore;
+using SharedKernel.Helper;
+using SharedKernel.Model.Responses;
+
+namespace Application.Todos.GetById;
+
+internal sealed class GetTodoByIdQueryHandler(IApplicationDbContext context, IUserContext userContext)
+    : IQueryHandler<GetTodoByIdQuery, TodoResponse>
+{
+    public async Task<ResponseModel<TodoResponse>> Handle(GetTodoByIdQuery query, CancellationToken cancellationToken)
+    {
+        TodoResponse? todo = await context.TodoItems
+            .Where(todoItem => todoItem.Id == query.TodoItemId && todoItem.UserId == userContext.UserId)
+            .Select(todoItem => new TodoResponse
+            {
+                Id = todoItem.Id,
+                UserId = todoItem.UserId,
+                Description = todoItem.Description,
+                DueDate = todoItem.DueDate,
+                Labels = todoItem.Labels,
+                IsCompleted = todoItem.IsCompleted,
+                CreatedAt = todoItem.CreatedAt,
+                CompletedAt = todoItem.CompletedAt
+            })
+            .SingleOrDefaultAsync(cancellationToken);
+
+        if (todo is null)
+        {
+            return ResponseModel<TodoResponse>.Failure(
+                MessageReader.GetMessage(ResponseStatusCode.ResourceNotFoundError.Value, "en"),
+                ResponseStatusCode.ResourceNotFoundError.ResponseCode);
+        }
+
+        return ResponseModel<TodoResponse>.Success(
+            todo,
+            MessageReader.GetMessage(ResponseStatusCode.Successful.Value, "en"));
+    }
+}
