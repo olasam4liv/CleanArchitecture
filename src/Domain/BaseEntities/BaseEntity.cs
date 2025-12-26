@@ -1,10 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using SharedKernel;
 
 namespace Domain.BaseEntities;
 
-public abstract class BaseEntity
+public abstract class BaseEntity : Entity
 {
-    public string Id { get; set; } = Guid.NewGuid().ToString();
+    public Guid Id { get; set; } = Guid.NewGuid();
 }

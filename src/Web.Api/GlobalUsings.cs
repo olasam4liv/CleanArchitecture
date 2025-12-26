@@ -13,6 +13,7 @@ global using Microsoft.AspNetCore.Authentication.JwtBearer;
 global using Microsoft.Extensions.Configuration;
 global using Microsoft.Extensions.DependencyInjection;
 global using Microsoft.Extensions.Hosting;
+global using Microsoft.Extensions.Options;
 
 global using Microsoft.OpenApi;
 
@@ -25,6 +26,7 @@ global using Web.Api.Infrastructure.Options;
 global using Application.Abstractions.Messaging;
 global using Application.Users.Register;
 global using SharedKernel;
+global using SharedKernel.Helper;
 global using SharedKernel.Model.Responses;
 global using System.Text.RegularExpressions;
 global using Serilog.Enrichers.Sensitive;

@@ -1,3 +1,18 @@
+# ============================================================================
+# Docker Compose Configuration for LOCAL DEVELOPMENT ONLY
+# ============================================================================
+# This file is NOT used in Azure App Service deployments.
+# For Azure deployment configuration, see: docs/AZURE_DEPLOYMENT.md
+#
+# Local Development Services:
+# - web-api: Your .NET API application
+# - rabbitmq: Message queue (replaced by Azure Service Bus in production)
+# - elasticsearch: Search & logging (replaced by Application Insights in production)
+# - seq: Log viewer (replaced by Application Insights in production)
+# - prometheus: Metrics (replaced by Azure Monitor in production)
+# - jaeger: Distributed tracing (replaced by Application Insights in production)
+# ============================================================================
+
 services:
   web-api:
     image: ${DOCKER_REGISTRY-}webapi
@@ -6,6 +21,8 @@ services:
       context: .
       dockerfile: src/Web.Api/Dockerfile
     environment:
+      # These environment variables are for LOCAL DEVELOPMENT ONLY
+      # In Azure App Service, these are configured in Application Settings
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_HTTP_PORTS=8080
       - ASPNETCORE_HTTPS_PORTS=
@@ -13,11 +30,23 @@ services:
       - RabbitMQ__Host=rabbitmq
       - RabbitMQ__Username=guest
       - RabbitMQ__Password=guest
+      - ConnectionStrings__Database=Server=host.docker.internal\\SQLEXPRESS;Database=CleanArchitecture;Integrated Security=true;Encrypt=False;TrustServerCertificate=True;
+      - Jwt__Secret=super-duper-secret-value-that-should-be-in-user-secrets
+      - Jwt__Issuer=https://coronation.ng
+      - Jwt__Audience=https://coronation.ng
+      - ELASTIC_URL=http://elasticsearch:9200
+      - SEQ_URL=http://seq:80
+      - SEQ_API_KEY=k2Zh7Hm58lF0Odhk71pQ
+      - OTEL_COLLECTOR_URL=http://otel-collector:4317
+      - OpenTelemetry__Otlp__Endpoint=http://otel-collector:4317
     ports:
       - 8000:8080
       - 8001:8081
     depends_on:
       - rabbitmq
+      - elasticsearch
+      - seq
+      - otel-collector
 
   # MSSQL service intentionally omitted; use external instance on localhost:1433
 
@@ -39,7 +68,7 @@ services:
     environment:
       - ACCEPT_EULA=Y
     ports:
-      - 8081:80
+      - 5341:80
 
   otel-collector:
     image: otel/opentelemetry-collector-contrib:0.103.0
@@ -81,6 +110,7 @@ services:
     environment:
       - GF_SECURITY_ADMIN_PASSWORD=admin
       - GF_SECURITY_ADMIN_USER=admin
+      - GF_INSTALL_PLUGINS=grafana-clock-panel
     volumes:
       - grafana_data:/var/lib/grafana
       - ./.containers/grafana/provisioning/datasources:/etc/grafana/provisioning/datasources:ro

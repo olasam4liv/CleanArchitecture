@@ -21,9 +21,9 @@ public class SerializerService : ISerializerService
         _options.Converters.Add(new JsonStringEnumConverter(JsonNamingPolicy.CamelCase));
     }
 
-    public T Deserialize<T>(string text)
+    public T? Deserialize<T>(string text)
     {
-        return JsonSerializer.Deserialize<T>(text);
+        return JsonSerializer.Deserialize<T>(text, _options);
     }
 
     public string Serialize<T>(T obj)

@@ -10,10 +10,24 @@
     <DockerComposeProjectName>clean-architecture</DockerComposeProjectName>
   </PropertyGroup>
   <ItemGroup>
+    <None Include=".containers\grafana\dashboards\application-dashboard.json" />
+    <None Include=".containers\grafana\provisioning\dashboards\dashboards.yml" />
+    <None Include=".containers\grafana\provisioning\datasources\datasources.yml" />
+    <None Include=".containers\promtail\config.yml" />
     <None Include="docker-compose.override.yml">
       <DependentUpon>docker-compose.yml</DependentUpon>
     </None>
     <None Include="docker-compose.yml" />
     <None Include=".dockerignore" />
+    <None Include="docs\AZURE_DEPLOYMENT.md" />
+    <None Include="docs\AZURE_VM_DEPLOYMENT.md" />
+    <None Include="docs\DEPLOYMENT_COMPARISON.md" />
+    <None Include="docs\DEPLOYMENT_DECISION_GUIDE.md" />
+    <None Include="docs\ENVIRONMENT_CONFIGURATION.md" />
+    <None Include="docs\GRAFANA_SETUP.md" />
+    <None Include="docs\PROMTAIL_DECISION.md" />
+    <None Include="docs\QUICK_REFERENCE.md" />
+    <None Include="docs\SERVICES_SETUP.md" />
+    <None Include="docs\SINGLE_SERVER_SETUP.md" />
   </ItemGroup>
 </Project>

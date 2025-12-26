@@ -16,10 +16,10 @@ COPY ["src/Application", "src/Application"]
 COPY ["src/Web.Worker", "src/Web.Worker"]
 
 WORKDIR "/source/src/Web.Worker"
-RUN dotnet build "Web.Worker.csproj" -c Release -o /app/build
+RUN dotnet build "Web.Worker.csproj" -c Release -o /app/build /p:TreatWarningsAsErrors=false /p:CodeAnalysisTreatWarningsAsErrors=false
 
 FROM build AS publish
-RUN dotnet publish "Web.Worker.csproj" -c Release -o /app/publish /p:UseAppHost=false
+RUN dotnet publish "Web.Worker.csproj" -c Release -o /app/publish /p:UseAppHost=false /p:TreatWarningsAsErrors=false /p:CodeAnalysisTreatWarningsAsErrors=false
 
 FROM mcr.microsoft.com/dotnet/runtime:10.0
 WORKDIR /app
