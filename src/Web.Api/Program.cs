@@ -123,6 +123,8 @@ builder.Services.Configure<RequestTimingOptions>(builder.Configuration.GetSectio
 
 builder.Services.AddEndpoints(Assembly.GetExecutingAssembly());
 
+bool skipMigrations = configuration.GetValue<bool>("SkipMigrations");
+
 WebApplication app = builder.Build();
 
 ApiVersionSet apiVersionSet = app.NewApiVersionSet()
@@ -137,12 +139,18 @@ RouteGroupBuilder api = app.MapGroup("api/v{version:apiVersion}")
 
 app.MapEndpoints(api);
 
-app.ApplyMigrations();
+if (!skipMigrations)
+{
+    app.ApplyMigrations();
+}
 
 if (app.Environment.IsDevelopment())
 {
     app.UseSwaggerWithUi();
-    app.ApplyMigrations();
+    if (!skipMigrations)
+    {
+        app.ApplyMigrations();
+    }
 }
 
 // Security headers

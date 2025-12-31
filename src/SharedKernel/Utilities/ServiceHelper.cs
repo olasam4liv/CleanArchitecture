@@ -82,7 +82,7 @@ public static partial class ServiceHelper
             AesEncryption.Encrypt(plainText, "apiUser.SecretKey", "apiUser.Iv");
     }
 
-    //public static ApiUser? GetApiUser(string clientId, string connectionStr)
+    //public static AppUser? GetApiUser(string clientId, string connectionStr)
     //{
     //    var apiUser = new ApiUser();
     //    string query = $"SELECT * FROM SpectaAdmin.Tbl_ApiUser WHERE ClientId = '{clientId}'";

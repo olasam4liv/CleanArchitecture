@@ -2,6 +2,7 @@
 using System.Text.Json;
 using Application.Abstractions.Data;
 using Application.Abstractions.Messaging;
+using Domain.Entities;
 using Domain.Todos;
 using Domain.Users;
 using Infrastructure.AuditLog;
@@ -29,6 +30,7 @@ public sealed class ApplicationDbContext(
     public DbSet<AuditTrailEntity> AuditTrails { get; set; }
 
     public DbSet<OutboxMessage> OutboxMessages { get; set; }
+    public DbSet<AppUser> AppUsers { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

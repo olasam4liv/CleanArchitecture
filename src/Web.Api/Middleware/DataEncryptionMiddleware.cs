@@ -41,10 +41,8 @@ public class DataEncryptionMiddleware(
                 return;
             }
 
-            bool isLive = bool.Parse(_configuration.GetSection("AppSettings:isLive").Value ?? "false");
-            string? connectionStr = isLive ?
-                _configuration.GetSection("DatabaseSettings:ProdConnectionString").Value :
-                _configuration.GetSection("DatabaseSettings:DevConnectionString").Value;
+
+            string? connectionStr = _configuration.GetConnectionString("Database");
 
             using var memoryStream = new MemoryStream();
             context.Response.Body = memoryStream;

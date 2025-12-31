@@ -29,5 +29,6 @@
     <None Include="docs\QUICK_REFERENCE.md" />
     <None Include="docs\SERVICES_SETUP.md" />
     <None Include="docs\SINGLE_SERVER_SETUP.md" />
+    <None Include="docs\TESTING_LOGGING.md" />
   </ItemGroup>
 </Project>

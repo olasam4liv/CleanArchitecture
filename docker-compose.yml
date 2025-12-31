@@ -30,7 +30,7 @@ services:
       - RabbitMQ__Host=rabbitmq
       - RabbitMQ__Username=guest
       - RabbitMQ__Password=guest
-      - ConnectionStrings__Database=Server=host.docker.internal\\SQLEXPRESS;Database=CleanArchitecture;Integrated Security=true;Encrypt=False;TrustServerCertificate=True;
+      - ConnectionStrings__Database=Server=localhost\SQLEXPRESS;Database=CleanArchitecture;Trusted_Connection=True;Encrypt=False;
       - Jwt__Secret=super-duper-secret-value-that-should-be-in-user-secrets
       - Jwt__Issuer=https://coronation.ng
       - Jwt__Audience=https://coronation.ng
