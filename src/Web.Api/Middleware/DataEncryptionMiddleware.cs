@@ -2,6 +2,8 @@
 using System.Net;
 using System.Text;
 using System.Text.Json;
+using Application.Abstractions.Authentication;
+using Application.Authentication.Clients;
 using Microsoft.Extensions.Primitives;
 using SharedKernel.Utilities;
 
@@ -11,12 +13,14 @@ public class DataEncryptionMiddleware(
     RequestDelegate next,
     IConfiguration configuration,
     IOptions<AppSettings> settings,
-    ILogger<DataEncryptionMiddleware> logger)
+    ILogger<DataEncryptionMiddleware> logger,
+    IAuthService authService)
 {
     private readonly RequestDelegate _next = next;
     private readonly AppSettings _settings = settings.Value;
     private readonly ILogger<DataEncryptionMiddleware> _logger = logger;
     private readonly IConfiguration _configuration = configuration;
+    private readonly IAuthService _authService = authService;
     private const string ClientId = "ClientId";
 
     public async Task Invoke(HttpContext context)
@@ -64,11 +68,15 @@ public class DataEncryptionMiddleware(
                 await context.Response.WriteAsync("Invalid Client Id or Connection String");
                 return;
             }
+            ResponseModel<GetApiClientResponse> client = await _authService.GetClientByKeyAsync(extractedClientId.ToString()!, CancellationToken.None);
+            if (!client.IsSuccess || client.Data == null || string.IsNullOrWhiteSpace(client.Data.ClientKey) || string.IsNullOrWhiteSpace(client.Data.ClientIv))
+            {
+                context.Response.StatusCode = (int)HttpStatusCode.Forbidden;
+                await context.Response.WriteAsync("Invalid Client Key");
+                return;
+            }
 
-            string? encryptedData = ServiceHelper.AesJsonEncryption(
-                responseBodyText,
-                extractedClientId.ToString(),
-                connectionStr);
+            string? encryptedData = ServiceHelper.AesJsonEncryption(responseBodyText, client.Data.ClientKey, client.Data.ClientIv);
 
             if (string.IsNullOrWhiteSpace(encryptedData))
             {

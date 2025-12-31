@@ -31,6 +31,7 @@ public sealed class ApplicationDbContext(
 
     public DbSet<OutboxMessage> OutboxMessages { get; set; }
     public DbSet<AppUser> AppUsers { get; set; }
+    public DbSet<ApiClient> ApiClients { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

@@ -25,6 +25,22 @@ public static partial class ServiceHelper
         return secret.ToString();
     }
 
+    public static string GenerateSecretCode(int length)
+    {
+        if (length <= 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(length), "Length must be greater than zero.");
+        }
+
+        var buffer = new StringBuilder(length);
+        while (buffer.Length < length)
+        {
+            buffer.Append(Alphabet[RandomNumberGenerator.GetInt32(Alphabet.Length)]);
+        }
+
+        return buffer.ToString();
+    }
+
     public static bool IsBase64String(string input)
     {
         var buffer = new Span<byte>(new byte[input.Length]);
@@ -73,40 +89,11 @@ public static partial class ServiceHelper
         return (int)(randomValue % (maxValue - minValue + 1)) + minValue;
     }
 
-    public static string? AesJsonEncryption(string plainText, string clientId, string connectionStr)
-    {
-        //var apiUser = GetApiUser(clientId, connectionStr);
-
-        return string.IsNullOrWhiteSpace("apiUser?.SecretKey") ?
-            "apiUser?.SecretKey" :
-            AesEncryption.Encrypt(plainText, "apiUser.SecretKey", "apiUser.Iv");
+    public static string? AesJsonEncryption(string plainText, string secretKey, string Iv)
+    {   
+        return AesEncryption.Encrypt(plainText, secretKey, Iv);
     }
 
-    //public static AppUser? GetApiUser(string clientId, string connectionStr)
-    //{
-    //    var apiUser = new ApiUser();
-    //    string query = $"SELECT * FROM SpectaAdmin.Tbl_ApiUser WHERE ClientId = '{clientId}'";
-
-    //    using (var con = new SqlConnection(connectionStr))
-    //    {
-    //        using var cmd = new SqlCommand(query);
-    //        cmd.Connection = con;
-    //        con.Open();
-    //        using (var sdr = cmd.ExecuteReader())
-    //        {
-    //            while (sdr.Read())
-    //            {
-    //                apiUser = new ApiUser
-    //                {
-    //                    SecretKey = Convert.ToString(sdr["SecretKey"]),
-    //                    Iv = Convert.ToString(sdr["Iv"]),
-    //                };
-    //            }
-    //        }
-    //        con.Close();
-    //    }
-    //    return apiUser;
-    //}
 
     public static bool ContainsScriptTag(string input) =>
         !string.IsNullOrWhiteSpace(input) && CheckScript().IsMatch(input);
