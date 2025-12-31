@@ -113,7 +113,7 @@ internal sealed class AuthService(IApplicationDbContext context) : IAuthService
             return ResponseModel<GetApiClientResponse>.Failure("Invalid client credentials", ResponseStatusCode.InvalidCredentials.ResponseCode);
         }
 
-        var dto = new GetApiClientResponse(client.Email, client.ClientKey, client.Iv, client.Name, client.IsActive);
+        var dto = new GetApiClientResponse(client.Email, client.ClientKey, client.Iv, client.SecretKey, client.IsActive);
 
         return ResponseModel<GetApiClientResponse>.Success(dto, "Client retrieved successfully");
     }

@@ -1,4 +1,6 @@
 ﻿using System.Net;
+using Application.Abstractions.Authentication;
+using Application.Authentication.Clients;
 using Domain.BaseEntities;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
@@ -9,15 +11,15 @@ namespace Web.Api.Filters;
 
 public class DecryptRequestDataFilter<T>(
     IOptions<AppSettings> settings,
-    ILogger<DecryptRequestDataFilter<T>> logger,
-    IConfiguration configuration,
-    IHttpContextAccessor httpContext
+    ILogger<DecryptRequestDataFilter<T>> logger,    
+    IHttpContextAccessor httpContext,
+    IAuthService authService
         ) : IAsyncActionFilter
 {
     private readonly AppSettings _settings = settings.Value;
     private readonly IHttpContextAccessor _httpContextAccessor = httpContext;
-    private readonly IConfiguration _configuration = configuration;
     private readonly ILogger<DecryptRequestDataFilter<T>> _logger = logger;
+    private readonly IAuthService _authService = authService;
 
     private const string CLIENTID = "ClientId";
     private const string REQUEST = "request";
@@ -57,19 +59,22 @@ public class DecryptRequestDataFilter<T>(
                 await SetForbiddenResponseAsync("Invalid Client Id");
                 return;
             }
-            bool isLive = bool.Parse(_configuration.GetSection("AppSettings:isLive").Value ?? "false");
-            string? connectionStr = isLive ?
-                _configuration.GetSection("DatabaseSettings:ProdConnectionString").Value :
-                _configuration.GetSection("DatabaseSettings:DevConnectionString").Value;
-
-            var apiUser = ServiceHelper.GetApiUser(extractedClientId, connectionStr);
-            if (string.IsNullOrWhiteSpace(apiUser.SecretKey))
+          
+            ResponseModel<GetApiClientResponse> client = await _authService.GetClientByKeyAsync(extractedClientId.ToString(), CancellationToken.None);
+            if (!client.IsSuccess || client.Data == null ||
+                string.IsNullOrWhiteSpace(client.Data.ClientKey) ||
+                string.IsNullOrWhiteSpace(client.Data.ClientIv))
+            {
+                await SetForbiddenResponseAsync("Invalid Client Id");
+                return;
+            }
+            if (string.IsNullOrWhiteSpace(client.Data.SecretKey))
             {
                 await SetForbiddenResponseAsync("Invalid Encryption Key");
                 return;
             }
 
-            var deserializedData = await ServiceHelper.DecryptRequest<T>(request.EncryptedData, apiUser.SecretKey, apiUser.Iv);
+            T deserializedData = await ServiceHelper.DecryptRequest<T>(request.EncryptedData!, client.Data.SecretKey, client.Data.ClientIv);
             if (deserializedData is not null)
             {
                 context.ActionArguments["request"] = deserializedData;

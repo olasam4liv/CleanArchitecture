@@ -69,14 +69,16 @@ public class DataEncryptionMiddleware(
                 return;
             }
             ResponseModel<GetApiClientResponse> client = await _authService.GetClientByKeyAsync(extractedClientId.ToString()!, CancellationToken.None);
-            if (!client.IsSuccess || client.Data == null || string.IsNullOrWhiteSpace(client.Data.ClientKey) || string.IsNullOrWhiteSpace(client.Data.ClientIv))
+            if (!client.IsSuccess || client.Data == null || 
+                string.IsNullOrWhiteSpace(client.Data.ClientKey) || 
+                string.IsNullOrWhiteSpace(client.Data.ClientIv) )
             {
                 context.Response.StatusCode = (int)HttpStatusCode.Forbidden;
                 await context.Response.WriteAsync("Invalid Client Key");
                 return;
             }
 
-            string? encryptedData = ServiceHelper.AesJsonEncryption(responseBodyText, client.Data.ClientKey, client.Data.ClientIv);
+            string? encryptedData = ServiceHelper.AesJsonEncryption(responseBodyText, client.Data.SecretKey, client.Data.ClientIv);
 
             if (string.IsNullOrWhiteSpace(encryptedData))
             {
