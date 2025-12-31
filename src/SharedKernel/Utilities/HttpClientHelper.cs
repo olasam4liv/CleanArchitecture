@@ -26,22 +26,40 @@ internal sealed class HttpClientHelper(
     private static bool IsWriteMethod(HttpMethod method) =>
         method == HttpMethod.Post || method == HttpMethod.Put || method == HttpMethod.Patch;
 
-    public async Task<ResponseModel<T>> MakeAPIRequestAsync<T>(
+    public Task<ResponseModel<T>> MakeAPIRequestAsync<T>(
+        string url,
+        HttpMethod method,
+        object? payload = null,
+        Dictionary<string, string>? headers = null,
+        bool isForm = false,
+        TimeSpan? timeout = null) =>
+        Uri.TryCreate(url, UriKind.Absolute, out Uri? requestUri)
+            ? MakeApiRequestInternal<T>(requestUri, method, payload, headers, isForm, timeout)
+            : Task.FromResult(ResponseModel<T>.Failure("Invalid URL"));
+
+    public Task<ResponseModel<T>> MakeAPIRequestAsync<T>(
         Uri url,
         HttpMethod method,
         object? payload = null,
         Dictionary<string, string>? headers = null,
         bool isForm = false,
-        TimeSpan? timeout = null)
+        TimeSpan? timeout = null) =>
+        MakeApiRequestInternal<T>(url, method, payload, headers, isForm, timeout);
+
+    private async Task<ResponseModel<T>> MakeApiRequestInternal<T>(
+        Uri url,
+        HttpMethod method,
+        object? payload,
+        Dictionary<string, string>? headers,
+        bool isForm,
+        TimeSpan? timeout)
     {
         try
         {
-            using HttpClient client = _httpClientFactory.CreateClient();
+            using HttpClient client = _httpClientFactory.CreateClient(nameof(HttpClientHelper));
             client.Timeout = timeout ?? TimeSpan.FromSeconds(60);
             client.DefaultRequestHeaders.Connection.Add("keep-alive");
 
-
-            // Add custom headers
             if (headers?.Any() == true)
             {
                 foreach (KeyValuePair<string, string> header in headers)
@@ -51,8 +69,7 @@ internal sealed class HttpClientHelper(
             }
 
             using HttpRequestMessage request = new(method, url);
-            
-            // Add payload for POST, PUT, PATCH
+
             if (payload is not null && IsWriteMethod(method))
             {
                 request.Content = isForm && payload is Dictionary<string, string> formData
@@ -82,49 +99,70 @@ internal sealed class HttpClientHelper(
     }
 
 
-    // public RestResponse MakeXmlRequest(string url, string payload = null, Method method = Method.Post, List<PostHeaders> headers = null, bool isForm = false)
-    // {
-    //     try
-    //     {
-    //         var response = new RestResponse();
-    //         var options = new RestClientOptions(url);
-    //         var client = new RestClient(options);
-    //         options.RemoteCertificateValidationCallback = (sender, certificate, chain, sslPolicyErros) => true;
-    //         var request = new RestRequest();
-    //         request.Method = method;
-    //         request.Timeout = TimeSpan.FromHours(1);
-    //         request.AddHeader("Content-Type", "text/xml");
+    public Task<ResponseModel<string>> MakeXmlRequestAsync(
+        string url,
+        HttpMethod method,
+        string? payload = null,
+        Dictionary<string, string>? headers = null,
+        TimeSpan? timeout = null) =>
+        Uri.TryCreate(url, UriKind.Absolute, out Uri? requestUri)
+            ? MakeXmlRequestInternal(requestUri, method, payload, headers, timeout)
+            : Task.FromResult(ResponseModel<string>.Failure(message: "Invalid URL"));
 
-    //         if (headers is not null && headers.Count > 0)
-    //         {
-    //             foreach (var header in headers)
-    //             {
-    //                 request.AddHeader(header.Key, header.Value);
-    //             }
-    //         }
+    public Task<ResponseModel<string>> MakeXmlRequestAsync(
+        Uri url,
+        HttpMethod method,
+        string? payload = null,
+        Dictionary<string, string>? headers = null,
+        TimeSpan? timeout = null) =>
+        MakeXmlRequestInternal(url, method, payload, headers, timeout);
 
-    //         if (payload is not null)
-    //         {
-    //             if (method == Method.Post || method == Method.Put)
-    //                 request.AddParameter(ApiEncoding.Text, payload, ParameterType.RequestBody);
-    //             response = client.Execute<dynamic>(request);
-    //         }
-    //         else
-    //         {
-    //             if (method == Method.Get)
-    //                 request.AddParameter(isForm ? ApiEncoding.Form : ApiEncoding.Json, Newtonsoft.Json.JsonConvert.SerializeObject(payload), ParameterType.RequestBody);
-    //             response = client.Execute(request);
-    //         }
+    private async Task<ResponseModel<string>> MakeXmlRequestInternal(
+        Uri url,
+        HttpMethod method,
+        string? payload,
+        Dictionary<string, string>? headers,
+        TimeSpan? timeout)
+    {
+        try
+        {
+            using HttpClient client = _httpClientFactory.CreateClient();
+            client.Timeout = timeout ?? TimeSpan.FromSeconds(60);
+            client.DefaultRequestHeaders.Connection.Add("keep-alive");
 
-    //         return response;
-    //     }
-    //     catch (Exception ex)
-    //     {
-    //         _logger.LogError("External Service Exeption: {@ex}", ex);
-    //         return default;
-    //     }
+            if (headers?.Any() == true)
+            {
+                foreach (KeyValuePair<string, string> header in headers)
+                {
+                    client.DefaultRequestHeaders.Add(header.Key, header.Value);
+                }
+            }
 
-    // }
+            using HttpRequestMessage request = new(method, url);
+            request.Headers.TryAddWithoutValidation("Content-Type", "text/xml");
+
+            if (payload is not null && IsWriteMethod(method))
+            {
+                request.Content = new StringContent(payload, Encoding.UTF8, "text/xml");
+            }
+
+            HttpResponseMessage response = await client.SendAsync(request);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                return ResponseModel<string>.Failure(
+                    message: $"Request failed with status code {(int)response.StatusCode}");
+            }
+
+            string responseData = await response.Content.ReadAsStringAsync();
+            return ResponseModel<string>.Success(responseData, "Request successful");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "External XML service exception");
+            return ResponseModel<string>.Failure(message: "External service failed");
+        }
+    }
 
 
 }
