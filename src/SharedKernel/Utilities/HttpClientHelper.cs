@@ -1,113 +1,130 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Globalization;
+using System.Linq;
+using System.Net.Http;
 using System.Text;
 using System.Text.Json;
+using System.Threading.Tasks;
+using Microsoft.Extensions.Http;
+using Microsoft.Extensions.Logging;
 using SharedKernel.Model.Responses;
 using SharedKernel.Utilities.Interfaces;
 
 namespace SharedKernel.Utilities;
 
-internal sealed class HttpClientHelper(ILogger<HttpClientHelper> logger) : IHttpClientHelper
+internal sealed class HttpClientHelper(
+    ILogger<HttpClientHelper> logger,
+    IHttpClientFactory httpClientFactory) : IHttpClientHelper
 {
     private readonly ILogger<HttpClientHelper> _logger = logger;
+    private readonly IHttpClientFactory _httpClientFactory = httpClientFactory;
+    private static readonly JsonSerializerOptions JsonOptions = new()
+    {
+        PropertyNameCaseInsensitive = true
+    };
 
-    public async Task<ResponseModel<T>> MakeAPIRequestAsync<T>(string url, HttpMethod method, object? payload = null, Dictionary<string, string> headers = null, TimeSpan? timeout = null)
+    private static bool IsWriteMethod(HttpMethod method) =>
+        method == HttpMethod.Post || method == HttpMethod.Put || method == HttpMethod.Patch;
+
+    public async Task<ResponseModel<T>> MakeAPIRequestAsync<T>(
+        Uri url,
+        HttpMethod method,
+        object? payload = null,
+        Dictionary<string, string>? headers = null,
+        bool isForm = false,
+        TimeSpan? timeout = null)
     {
         try
         {
-            var handler = new HttpClientHandler
-            {
-                ServerCertificateCustomValidationCallback = (sender, cert, chain, sslPolicyErrors) => true
-            };
-
-            using var client = new HttpClient(handler)
-            {
-                Timeout = timeout ?? TimeSpan.FromSeconds(60)
-            };
+            using HttpClient client = _httpClientFactory.CreateClient();
+            client.Timeout = timeout ?? TimeSpan.FromSeconds(60);
             client.DefaultRequestHeaders.Connection.Add("keep-alive");
 
+
+            // Add custom headers
             if (headers?.Any() == true)
             {
-                foreach (var header in headers)
+                foreach (KeyValuePair<string, string> header in headers)
                 {
                     client.DefaultRequestHeaders.Add(header.Key, header.Value);
                 }
             }
 
-            var request = new HttpRequestMessage(method, url);
-
-            if (payload != null)
+            using HttpRequestMessage request = new(method, url);
+            
+            // Add payload for POST, PUT, PATCH
+            if (payload is not null && IsWriteMethod(method))
             {
-                request.Content = new StringContent(JsonSerializer.Serialize(payload), Encoding.UTF8, ApiEncoding.Json);
+                request.Content = isForm && payload is Dictionary<string, string> formData
+                    ? new FormUrlEncodedContent(formData)
+                    : new StringContent(JsonSerializer.Serialize(payload), Encoding.UTF8, "application/json");
             }
 
-            var response = await client.SendAsync(request);
-            //response.EnsureSuccessStatusCode();
+            HttpResponseMessage response = await client.SendAsync(request);
             if (!response.IsSuccessStatusCode)
-                return await Result<T>.FailAsync("request fail", statusCode: (int)response.StatusCode);
+            {
+                return ResponseModel<T>.Failure($"Request failed with status code {(int)response.StatusCode}");
+            }
 
             string responseData = await response.Content.ReadAsStringAsync();
-            var result = JsonSerializer.Deserialize<T>(responseData, new JsonSerializerOptions
-            {
-                PropertyNameCaseInsensitive = true
-            });
+            T? result = JsonSerializer.Deserialize<T>(responseData, JsonOptions);
 
-            return await Result<T>.SuccessAsync(result, statusCode: (int)response.StatusCode);
+            return result is null
+                ? ResponseModel<T>.Failure("Unable to parse response")
+                : ResponseModel<T>.Success(result, "Request successful");
         }
         catch (Exception ex)
         {
-
-            _logger.LogError("External Service Exeption: {@ex}", ex);
-            return await Result<T>.FailAsync("External Service failed");
+            _logger.LogError(ex, "External service exception");
+            return ResponseModel<T>.Failure("External service failed");
         }
 
     }
 
 
-    public RestResponse MakeXmlRequest(string url, string payload = null, Method method = Method.Post, List<PostHeaders> headers = null, bool isForm = false)
-    {
-        try
-        {
-            var response = new RestResponse();
-            var options = new RestClientOptions(url);
-            var client = new RestClient(options);
-            options.RemoteCertificateValidationCallback = (sender, certificate, chain, sslPolicyErros) => true;
-            var request = new RestRequest();
-            request.Method = method;
-            request.Timeout = TimeSpan.FromHours(1);
-            request.AddHeader("Content-Type", "text/xml");
+    // public RestResponse MakeXmlRequest(string url, string payload = null, Method method = Method.Post, List<PostHeaders> headers = null, bool isForm = false)
+    // {
+    //     try
+    //     {
+    //         var response = new RestResponse();
+    //         var options = new RestClientOptions(url);
+    //         var client = new RestClient(options);
+    //         options.RemoteCertificateValidationCallback = (sender, certificate, chain, sslPolicyErros) => true;
+    //         var request = new RestRequest();
+    //         request.Method = method;
+    //         request.Timeout = TimeSpan.FromHours(1);
+    //         request.AddHeader("Content-Type", "text/xml");
 
-            if (headers is not null && headers.Count > 0)
-            {
-                foreach (var header in headers)
-                {
-                    request.AddHeader(header.Key, header.Value);
-                }
-            }
+    //         if (headers is not null && headers.Count > 0)
+    //         {
+    //             foreach (var header in headers)
+    //             {
+    //                 request.AddHeader(header.Key, header.Value);
+    //             }
+    //         }
 
-            if (payload is not null)
-            {
-                if (method == Method.Post || method == Method.Put)
-                    request.AddParameter(ApiEncoding.Text, payload, ParameterType.RequestBody);
-                response = client.Execute<dynamic>(request);
-            }
-            else
-            {
-                if (method == Method.Get)
-                    request.AddParameter(isForm ? ApiEncoding.Form : ApiEncoding.Json, Newtonsoft.Json.JsonConvert.SerializeObject(payload), ParameterType.RequestBody);
-                response = client.Execute(request);
-            }
+    //         if (payload is not null)
+    //         {
+    //             if (method == Method.Post || method == Method.Put)
+    //                 request.AddParameter(ApiEncoding.Text, payload, ParameterType.RequestBody);
+    //             response = client.Execute<dynamic>(request);
+    //         }
+    //         else
+    //         {
+    //             if (method == Method.Get)
+    //                 request.AddParameter(isForm ? ApiEncoding.Form : ApiEncoding.Json, Newtonsoft.Json.JsonConvert.SerializeObject(payload), ParameterType.RequestBody);
+    //             response = client.Execute(request);
+    //         }
 
-            return response;
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError("External Service Exeption: {@ex}", ex);
-            return default;
-        }
+    //         return response;
+    //     }
+    //     catch (Exception ex)
+    //     {
+    //         _logger.LogError("External Service Exeption: {@ex}", ex);
+    //         return default;
+    //     }
 
-    }
+    // }
 
 
 }
