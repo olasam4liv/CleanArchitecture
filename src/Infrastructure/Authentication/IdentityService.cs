@@ -21,9 +21,24 @@ internal sealed class IdentityService(UserManager<User> userManager, SignInManag
     {
         return userManager.Users.AsNoTracking().FirstOrDefaultAsync(u => u.Email == email, cancellationToken);
     }
+    
+    public Task<User?> FindByIdAsync(Guid userId, CancellationToken cancellationToken = default)
+    {
+        return userManager.Users.FirstOrDefaultAsync(u => u.Id == userId, cancellationToken);
+    }
 
     public Task<SignInResult> CheckPasswordSignInAsync(User user, string password, bool lockoutOnFailure)
     {
         return signInManager.CheckPasswordSignInAsync(user, password, lockoutOnFailure);
+    }
+    
+    public Task<string> GenerateEmailConfirmationTokenAsync(User user)
+    {
+        return userManager.GenerateEmailConfirmationTokenAsync(user);
+    }
+    
+    public Task<IdentityResult> ConfirmEmailAsync(User user, string token)
+    {
+        return userManager.ConfirmEmailAsync(user, token);
     }
 }

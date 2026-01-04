@@ -2,4 +2,7 @@
 
 namespace Domain.DomainEvents.User;
 
-public sealed record UserRegisteredDomainEvent(Guid UserId) : IDomainEvent;
+public sealed record UserRegisteredDomainEvent(
+    Guid UserId, 
+    string Email, 
+    string FirstName) : IDomainEvent;

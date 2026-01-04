@@ -2,11 +2,13 @@
 using System.Text;
 using Application.Abstractions.Authentication;
 using Application.Abstractions.Data;
+using Application.Abstractions.Email;
 using Domain.Entities;
 using Infrastructure.Authentication;
 using Infrastructure.Authorization;
 using Infrastructure.Database;
 using Infrastructure.DomainEvents;
+using Infrastructure.Email;
 using Infrastructure.Messaging;
 using Infrastructure.Outbox;
 using Infrastructure.Time;
@@ -35,7 +37,8 @@ public static class DependencyInjection
             .AddHealthChecks(configuration)
             .AddAuthenticationInternal(configuration)
             .AddAuthorizationInternal()
-            .AddMessaging(configuration);
+            .AddMessaging(configuration)
+            .AddEmailService();
 
     private static IServiceCollection AddServices(this IServiceCollection services)
     {
@@ -88,10 +91,15 @@ public static class DependencyInjection
                 options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(5);
                 options.Lockout.AllowedForNewUsers = true;
                 options.User.RequireUniqueEmail = true;
+                
+                // Email confirmation settings
+                options.SignIn.RequireConfirmedEmail = false; // Set to true to require email confirmation before login
+                options.Tokens.EmailConfirmationTokenProvider = TokenOptions.DefaultEmailProvider;
             })
             .AddRoles<IdentityRole<Guid>>()
             .AddEntityFrameworkStores<ApplicationDbContext>()
-            .AddSignInManager();
+            .AddSignInManager()
+            .AddDefaultTokenProviders(); // Required for email confirmation tokens
 
         services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             .AddJwtBearer(o =>
@@ -162,6 +170,13 @@ public static class DependencyInjection
         {
             services.AddSingleton<IEventBus, InMemoryEventBus>();
         }
+
+        return services;
+    }
+
+    private static IServiceCollection AddEmailService(this IServiceCollection services)
+    {
+        services.AddScoped<IEmailService, EmailService>();
 
         return services;
     }

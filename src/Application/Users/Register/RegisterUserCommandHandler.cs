@@ -11,7 +11,8 @@ using SharedKernel.Model.Responses;
 
 namespace Application.Users.Register;
 
-internal sealed class RegisterUserCommandHandler(IIdentityService identityService)
+internal sealed class RegisterUserCommandHandler(
+    IIdentityService identityService)
     : IResponseCommandHandler<RegisterUserCommand, UserResponse>
 {
     public async Task<ResponseModel<UserResponse>> Handle(RegisterUserCommand command, CancellationToken cancellationToken)
@@ -33,8 +34,6 @@ internal sealed class RegisterUserCommandHandler(IIdentityService identityServic
             LockoutEnabled = true
         };
 
-        user.RaiseDomainEvent(new UserRegisteredDomainEvent(user.Id));
-
         IdentityResult result = await identityService.CreateUserAsync(user, command.Password, cancellationToken);
 
         if (!result.Succeeded)
@@ -47,7 +46,9 @@ internal sealed class RegisterUserCommandHandler(IIdentityService identityServic
                 ResponseStatusCode.ValidationError.ResponseCode);
         }
 
-        var response = new UserResponse
+        // Raise domain event AFTER successful creation - will trigger email sending via event handler
+        user.RaiseDomainEvent(new UserRegisteredDomainEvent(user.Id, command.Email, command.FirstName));
+var response = new UserResponse
         {
             Id = user.Id,
             Email = user.Email ?? string.Empty,
@@ -57,6 +58,7 @@ internal sealed class RegisterUserCommandHandler(IIdentityService identityServic
 
         return ResponseModel<UserResponse>.Success(
             response,
-            MessageReader.GetMessage(ResponseStatusCode.Successful.Value, "en"));
+            MessageReader.GetMessage(ResponseStatusCode.Successful.Value, "en"));   // TODO: Add proper logging via ILogger
+        }
     }
-}
+

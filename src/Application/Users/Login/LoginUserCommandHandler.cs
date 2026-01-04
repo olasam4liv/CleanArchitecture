@@ -22,6 +22,15 @@ internal sealed class LoginUserCommandHandler(
                 ResponseStatusCode.UserNotFound.ResponseCode);
         }
 
+        // Optional: Enforce email confirmation before allowing login
+        // Uncomment the following block if you set options.SignIn.RequireConfirmedEmail = true
+        // if (!user.EmailConfirmed)
+        // {
+        //     return ResponseModel<string>.Failure(
+        //         "Please confirm your email before logging in. Check your inbox for the confirmation link.",
+        //         ResponseStatusCode.ValidationError.ResponseCode);
+        // }
+
         SignInResult result = await identityService.CheckPasswordSignInAsync(user, command.Password, lockoutOnFailure: true);
 
         if (result.IsLockedOut)
