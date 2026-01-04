@@ -1,4 +1,4 @@
-﻿using Domain.Users;
+﻿using Domain.DomainEvents.User;
 using SharedKernel;
 
 namespace Application.Users.Register;

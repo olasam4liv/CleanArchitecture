@@ -1,0 +1,63 @@
+{
+  "$schema": "http://json.schemastore.org/template",
+  "author": "Sam",
+  "classifications": ["Clean Architecture", "Web", "API", "Worker", "CQRS"],
+  "name": "Clean Architecture by Sam",
+  "identity": "Sam.CleanArchitecture.Template",
+  "shortName": "sam-clean-architecture",
+  "sourceName": "CleanArchitecture",
+  "preferNameDirectory": true,
+  "description": "Clean architecture solution with API, worker, EF Core, MassTransit, Serilog, and OpenTelemetry.",
+  "tags": {
+    "language": "C#",
+    "type": "solution"
+  },
+  "symbols": {
+    "skipRestore": {
+      "type": "parameter",
+      "datatype": "bool",
+      "defaultValue": "false",
+      "description": "Skip running dotnet restore after creation"
+    }
+  },
+  "sources": [
+    {
+      "modifiers": [
+        {
+          "exclude": [
+            ".git/**",
+            ".vs/**",
+            "**/.vs/**",
+            "**/.git/**",
+            "**/.idea/**",
+            "**/bin/**",
+            "**/obj/**",
+            "nupkg/**",
+            "templatepack/**",
+            "**/Thumbs.db",
+            "**/.DS_Store"
+          ]
+        }
+      ]
+    }
+  ],
+  "primaryOutputs": [
+    { "path": "CleanArchitecture.sln" }
+  ],
+  "postActions": [
+    {
+      "id": "restore",
+      "condition": "(!skipRestore)",
+      "description": "Run dotnet restore",
+      "manualInstructions": [
+        { "text": "Run 'dotnet restore'" }
+      ],
+      "actionId": "CBF8AF30-31B4-4FFD-9CCF-84B0B90B7561",
+      "args": {
+        "executable": "dotnet",
+        "args": "restore"
+      },
+      "continueOnError": true
+    }
+  ]
+}

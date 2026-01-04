@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <PackageType>Template</PackageType>
+    <PackageId>sam-clean-architecture</PackageId>
+    <PackageVersion>0.1.0</PackageVersion>
+    <Authors>Sam</Authors>
+    <Description>Clean Architecture solution template with API, worker, EF Core, MassTransit, Serilog, and OpenTelemetry.</Description>
+    <PackageOutputPath>../nupkg</PackageOutputPath>
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+    <SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
+    <NoWarn>NU5128</NoWarn>
+  </PropertyGroup>
+  <ItemGroup>
+    <None Include="../**/*"
+          Pack="true"
+          PackagePath="content/"
+          Exclude="../templatepack/**;../nupkg/**;../.git/**;../.vs/**;../bin/**;../obj/**;../**/bin/**;../**/obj/**;../**/.vs/**;../**/.git/**;../**/.idea/**;../**/.DS_Store;../**/Thumbs.db" />
+  </ItemGroup>
+</Project>

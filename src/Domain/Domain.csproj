@@ -5,7 +5,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="DomainEvents\" />
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
   </ItemGroup>
 
 </Project>

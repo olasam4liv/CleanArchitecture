@@ -3,12 +3,12 @@ using System.Text.Json;
 using Application.Abstractions.Data;
 using Application.Abstractions.Messaging;
 using Domain.Entities;
-using Domain.Todos;
-using Domain.Users;
 using Infrastructure.AuditLog;
 using Infrastructure.DomainEvents;
 using Infrastructure.Outbox;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using SharedKernel;
@@ -22,9 +22,9 @@ public sealed class ApplicationDbContext(
     IEnumerable<IIntegrationEventMapper> integrationEventMappers,
     IHttpContextAccessor httpContextAccessor,
     ISerializerService _serializer)
-    : DbContext(options), IApplicationDbContext
+    : IdentityDbContext<User, IdentityRole<Guid>, Guid>(options), IApplicationDbContext
 {
-    public DbSet<User> Users { get; set; }
+    public new DbSet<User> Users => base.Users;
 
     public DbSet<TodoItem> TodoItems { get; set; }
     public DbSet<AuditTrailEntity> AuditTrails { get; set; }
@@ -33,14 +33,16 @@ public sealed class ApplicationDbContext(
     public DbSet<AppUser> AppUsers { get; set; }
     public DbSet<ApiClient> ApiClients { get; set; }
 
-    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    protected override void OnModelCreating(ModelBuilder builder)
     {
-        modelBuilder.ApplyConfigurationsFromAssembly(typeof(ApplicationDbContext).Assembly);
+        base.OnModelCreating(builder);
 
-        modelBuilder.HasDefaultSchema(Schemas.Default);
+        builder.ApplyConfigurationsFromAssembly(typeof(ApplicationDbContext).Assembly);
+
+        builder.HasDefaultSchema(Schemas.Default);
 
         // Apply global query filter for soft delete
-        modelBuilder.AppendGlobalQueryFilter<ISoftDelete>(e => e.DeletedOn == null);
+        builder.AppendGlobalQueryFilter<ISoftDelete>(e => e.DeletedOn == null);
     }
 
     public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
@@ -226,7 +228,7 @@ public sealed class ApplicationDbContext(
     private List<IDomainEvent> ExtractDomainEvents()
     {
         return ChangeTracker
-            .Entries<Entity>()
+            .Entries<IDomainEventEntity>()
             .Select(entry => entry.Entity)
             .SelectMany(entity =>
             {

@@ -1,4 +1,5 @@
 ﻿using Asp.Versioning;
+using Application.Users.GetById;
 
 namespace Web.Api.Endpoints.Users;
 
@@ -19,28 +20,22 @@ internal sealed class Register : IEndpoint
     {
         app.MapPost("users/register", async (
             RegisterUserCommand request,
-            IResponseCommandHandler<RegisterUserCommand, Guid> handler,
+            IResponseCommandHandler<RegisterUserCommand, UserResponse> handler,
             CancellationToken cancellationToken) =>
         {
-            // var command = new RegisterUserCommand(
-            //     request.Email,
-            //     request.FirstName,
-            //     request.LastName,
-            //     request.Password);
-
-            ResponseModel<Guid> result = await handler.Handle(request, cancellationToken);
+            ResponseModel<UserResponse> result = await handler.Handle(request, cancellationToken);
 
             return result.IsSuccess ? Results.Ok(result) : Results.BadRequest(result);
         })
         .AllowAnonymous()
         .MapToApiVersion(new ApiVersion(1, 0))
         .WithTags(Tags.Users)
-        .Produces<ResponseModel<Guid>>(StatusCodes.Status200OK)
-        .Produces<ResponseModel<Guid>>(StatusCodes.Status400BadRequest)
+        .Produces<ResponseModel<UserResponse>>(StatusCodes.Status200OK)
+        .Produces<ResponseModel<UserResponse>>(StatusCodes.Status400BadRequest)
         .WithOpenApi(operation => new OpenApiOperation(operation)
         {
             Summary = "Register a new user",
-            Description = "Creates a new user and returns a ResponseModel containing the user id on success or validation errors on failure."
+            Description = "Creates a new user and returns a ResponseModel containing user details on success or validation errors on failure."
         });
     }
 }

@@ -1,6 +1,4 @@
 ﻿using Domain.Entities;
-using Domain.Todos;
-using Domain.Users;
 using Microsoft.EntityFrameworkCore;
 
 namespace Application.Abstractions.Data;

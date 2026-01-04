@@ -32,6 +32,25 @@ A production-ready .NET 10 Clean Architecture template with comprehensive observ
 
 ## Quick Start
 
+### Use as a dotnet new template (recommended)
+
+```bash
+# Install from GitHub source
+dotnet new --install https://github.com/olasam4liv/CleanArchitecture
+
+# After publishing the package (PackageId: sam-clean-architecture)
+dotnet new --install sam-clean-architecture
+
+# Scaffold a new solution
+dotnet new sam-clean-architecture -n MyProject
+cd MyProject
+dotnet restore
+
+# (Optional) Pack locally for testing the template
+dotnet pack templatepack/Sam.CleanArchitecture.Template.csproj
+dotnet new --install nupkg/sam-clean-architecture.0.1.0.nupkg
+```
+
 ### Prerequisites
 - .NET 10 SDK
 - Docker Desktop
@@ -40,9 +59,9 @@ A production-ready .NET 10 Clean Architecture template with comprehensive observ
 ### Run Locally
 
 ```bash
-# Clone repository
-git clone https://github.com/olasam4liv/CleanArchitecture.git
-cd CleanArchitecture
+# (If you haven't already) scaffold a project
+# dotnet new sam-clean-architecture -n MyProject
+cd MyProject
 
 # Copy environment file
 cp src/Web.Api/.env.example src/Web.Api/.env
@@ -366,9 +385,7 @@ Contributions are welcome! Please:
 
 ## Learn More
 
-This template is inspired by **Pragmatic Clean Architecture** by Milan Jovanovi?:
-
-[**Pragmatic Clean Architecture Course**](https://www.milanjovanovic.tech/pragmatic-clean-architecture?utm_source=ca-template)
+This template by Samuel Olatunji
 
 Includes:
 - Domain-Driven Design

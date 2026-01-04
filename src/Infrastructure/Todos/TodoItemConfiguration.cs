@@ -1,5 +1,4 @@
-﻿using Domain.Todos;
-using Domain.Users;
+﻿using Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 

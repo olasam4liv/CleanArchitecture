@@ -1,6 +1,6 @@
 ﻿using System.Reflection;
 using Application.Abstractions.Messaging;
-using Domain.Users;
+using Domain.Entities;
 using Infrastructure.Database;
 using Web.Api;
 

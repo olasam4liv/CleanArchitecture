@@ -1,7 +1,8 @@
 ﻿using Application.Abstractions.Authentication;
 using Application.Abstractions.Data;
 using Application.Abstractions.Messaging;
-using Domain.Todos;
+using Domain.DomainEvents.Todo;
+using Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using SharedKernel;
 using SharedKernel.Helper;

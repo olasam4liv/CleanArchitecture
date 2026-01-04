@@ -1,5 +1,5 @@
 using Application.Abstractions.Messaging;
-using Domain.Users;
+using Domain.DomainEvents.User;
 
 namespace Application.Users.Events;
 
@@ -12,7 +12,7 @@ internal sealed class UserIntegrationEventMapper : IIntegrationEventMapper
     {
         return domainEvent switch
         {
-            Domain.Users.UserRegisteredDomainEvent evt => new UserRegisteredIntegrationEvent
+            UserRegisteredDomainEvent evt => new UserRegisteredIntegrationEvent
             {
                 EventType = nameof(UserRegisteredIntegrationEvent),
                 UserId = evt.UserId,

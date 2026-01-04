@@ -1,5 +1,5 @@
 using Application.Abstractions.Messaging;
-using Domain.Todos;
+using Domain.DomainEvents.Todo;
 
 namespace Application.Todos.Events;
 
@@ -12,20 +12,20 @@ internal sealed class TodoIntegrationEventMapper : IIntegrationEventMapper
     {
         return domainEvent switch
         {
-            Domain.Todos.TodoItemCreatedDomainEvent evt => new TodoItemCreatedIntegrationEvent
+            TodoItemCreatedDomainEvent evt => new TodoItemCreatedIntegrationEvent
             {
                 EventType = nameof(TodoItemCreatedIntegrationEvent),
                 TodoItemId = evt.TodoItemId,
                 UserId = Guid.Empty,  // TODO: enrich from TodoItem entity if needed
                 Description = string.Empty
             },
-            Domain.Todos.TodoItemCompletedDomainEvent evt => new TodoItemCompletedIntegrationEvent
+            TodoItemCompletedDomainEvent evt => new TodoItemCompletedIntegrationEvent
             {
                 EventType = nameof(TodoItemCompletedIntegrationEvent),
                 TodoItemId = evt.TodoItemId,
                 UserId = Guid.Empty
             },
-            Domain.Todos.TodoItemDeletedDomainEvent evt => new TodoItemDeletedIntegrationEvent
+            TodoItemDeletedDomainEvent evt => new TodoItemDeletedIntegrationEvent
             {
                 EventType = nameof(TodoItemDeletedIntegrationEvent),
                 TodoItemId = evt.TodoItemId,

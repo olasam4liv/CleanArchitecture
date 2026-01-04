@@ -1,5 +1,6 @@
 using Application.Abstractions.Messaging;
 using Application.Users.Register;
+using Application.Users.GetById;
 using SharedKernel.Model.Responses;
 using Web.Api.Extensions;
 using Web.Api.Infrastructure;
@@ -24,29 +25,29 @@ internal sealed class RegisterV2 : IEndpoint
     {
         app.MapPost("users/register", async (
             RegisterUserCommand request,
-            IResponseCommandHandler<RegisterUserCommand, Guid> handler,
+            IResponseCommandHandler<RegisterUserCommand, UserResponse> handler,
             CancellationToken cancellationToken) =>
         {
-            ResponseModel<Guid> result = await handler.Handle(request, cancellationToken);
+            ResponseModel<UserResponse> result = await handler.Handle(request, cancellationToken);
 
-            if (result.IsSuccess)
+            if (result.IsSuccess && result.Data is { } user)
             {
                 // V2 returns enhanced response with user details
                 Response v2Response = new(
-                    result.Data!,
-                    request.Email,
-                    $"{request.FirstName} {request.LastName}");
+                    user.Id,
+                    user.Email,
+                    $"{user.FirstName} {user.LastName}");
                 
                 return Results.Ok(ResponseModel<Response>.Success(v2Response, result.Message));
             }
 
-            return Results.BadRequest(result);
+            return Results.BadRequest(ResponseModel<Response>.Failure(result.Message, result.ResponseCode));
         })
         .AllowAnonymous()
         .MapToApiVersion(new ApiVersion(2, 0))
         .WithTags(Tags.Users)
         .Produces<ResponseModel<Response>>(StatusCodes.Status200OK)
-        .Produces<ResponseModel<Guid>>(StatusCodes.Status400BadRequest)
+        .Produces<ResponseModel<Response>>(StatusCodes.Status400BadRequest)
         .WithOpenApi(operation => new OpenApiOperation(operation)
         {
             Summary = "Register a new user (v2 - Enhanced)",

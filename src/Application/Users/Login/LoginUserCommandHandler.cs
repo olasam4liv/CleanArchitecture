@@ -1,23 +1,19 @@
 ﻿using Application.Abstractions.Authentication;
-using Application.Abstractions.Data;
 using Application.Abstractions.Messaging;
-using Domain.Users;
-using Microsoft.EntityFrameworkCore;
+using Domain.Entities;
+using Microsoft.AspNetCore.Identity;
 using SharedKernel.Helper;
 using SharedKernel.Model.Responses;
 
 namespace Application.Users.Login;
 
 internal sealed class LoginUserCommandHandler(
-    IApplicationDbContext context,
-    IPasswordHasher passwordHasher,
+    IIdentityService identityService,
     ITokenProvider tokenProvider) : ICommandHandler<LoginUserCommand, string>
 {
     public async Task<ResponseModel<string>> Handle(LoginUserCommand command, CancellationToken cancellationToken)
     {
-        User? user = await context.Users
-            .AsNoTracking()
-            .SingleOrDefaultAsync(u => u.Email == command.Email, cancellationToken);
+        User? user = await identityService.FindByEmailAsync(command.Email, cancellationToken);
 
         if (user is null)
         {
@@ -26,9 +22,16 @@ internal sealed class LoginUserCommandHandler(
                 ResponseStatusCode.UserNotFound.ResponseCode);
         }
 
-        bool verified = passwordHasher.Verify(command.Password, user.PasswordHash);
+        SignInResult result = await identityService.CheckPasswordSignInAsync(user, command.Password, lockoutOnFailure: true);
 
-        if (!verified)
+        if (result.IsLockedOut)
+        {
+            return ResponseModel<string>.Failure(
+                "Account locked due to repeated failed login attempts. Please try again later.",
+                ResponseStatusCode.InvalidCredentials.ResponseCode);
+        }
+
+        if (!result.Succeeded)
         {
             return ResponseModel<string>.Failure(
                 MessageReader.GetMessage(ResponseStatusCode.InvalidCredentials.Value, "en"),
